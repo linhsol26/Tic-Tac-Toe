@@ -129,12 +129,19 @@ class _PlayState extends State<Play> {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: disables[index] ? Colors.redAccent : Colors.white,
-                    border: Border.all(),
+                    color: disables[index] ? Colors.blueGrey : Colors.grey,
+                    border: Border.all(
+                      color: Colors.black,
+                    ),
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Center(
-                    child: Text(values[index] is String ? values[index] : ''),
+                    child: Text(values[index] is String ? values[index] : '',
+                        style: TextStyle(
+                            fontSize: 40,
+                            color: values[index] == 'X'
+                                ? Colors.lime
+                                : Colors.white)),
                   ),
                 ),
               );
