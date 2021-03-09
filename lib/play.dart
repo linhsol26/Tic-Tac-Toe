@@ -1,7 +1,5 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:tic_tac_toe/box.dart';
+import 'package:tic_tac_toe/move.dart';
 
 class Play extends StatefulWidget {
   Play({Key key}) : super(key: key);
@@ -50,52 +48,50 @@ class _PlayState extends State<Play> {
     List<dynamic> availableSpots = emptyIndex(newBoard);
 
     if (isWin(newBoard, hPlayer)) {
-      return -10;
+      return new Move(score: -10);
     } else if (isWin(newBoard, cPlayer)) {
-      return 10;
+      return new Move(score: 10);
     } else if (availableSpots.length == 0) {
-      return 0;
+      return new Move(score: 0);
     }
 
-    List<dynamic> moves = [];
-    List<dynamic> indexs = [];
+    List<Move> moves = [];
+
     for (int i = 0; i < availableSpots.length; i++) {
-      dynamic index;
-      dynamic score;
-      index = newBoard[availableSpots[i]];
+      Move move = new Move();
+      move.index = newBoard[availableSpots[i]];
       newBoard[availableSpots[i]] = player;
 
       if (player == cPlayer) {
-        dynamic result = minimax(newBoard, hPlayer);
-        score = result;
+        move.score = minimax(newBoard, hPlayer).score;
+        // move.score = result;
       } else {
-        dynamic result = minimax(newBoard, cPlayer);
-        score = result;
+        move.score = minimax(newBoard, cPlayer).score;
+        // move.score = result;
       }
 
-      newBoard[availableSpots[i]] = index;
+      newBoard[availableSpots[i]] = move.index;
 
-      moves.add(score);
-      indexs.add(index);
+      moves.add(move);
       int bestMove;
       if (player == cPlayer) {
         dynamic bestScore = -10000;
         for (int i = 0; i < moves.length; i++) {
-          if (moves[i] > bestScore) {
-            bestScore = moves[i];
+          if (moves[i].score > bestScore) {
+            bestScore = moves[i].score;
             bestMove = i;
           }
         }
       } else {
         dynamic bestScore = 10000;
         for (int i = 0; i < moves.length; i++) {
-          if (moves[i] < bestScore) {
-            bestScore = moves[i];
+          if (moves[i].score < bestScore) {
+            bestScore = moves[i].score;
             bestMove = i;
           }
         }
       }
-      return indexs[bestMove];
+      return moves[bestMove];
     }
   }
 
@@ -118,11 +114,11 @@ class _PlayState extends State<Play> {
               return GestureDetector(
                 onTap: () {
                   setState(() {
-                    dynamic i = minimax(this.values, cPlayer);
+                    Move i = minimax(this.values, cPlayer);
                     this.disables[index] = true;
                     this.values[index] = 'X';
-                    this.values[i] = 'O';
-                    this.disables[i] = true;
+                    this.values[i.index] = 'O';
+                    this.disables[i.index] = true;
                   });
                 },
                 child: Container(
