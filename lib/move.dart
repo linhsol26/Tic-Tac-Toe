@@ -1,6 +1,6 @@
 class Move {
-  int score = 0;
-  int index = 0;
+  int score;
+  int index;
 
   Move({this.score, this.index});
 }

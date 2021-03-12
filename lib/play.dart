@@ -22,9 +22,23 @@ class _PlayState extends State<Play> {
   ];
 
   List<dynamic> values = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-  int count = 0;
   String hPlayer = 'X';
   String cPlayer = 'O';
+
+  reset() {
+    this.values = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    this.disables = [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ];
+  }
 
   emptyIndex(arr) {
     return arr.where((i) => i != this.hPlayer && i != this.cPlayer).toList();
@@ -63,35 +77,85 @@ class _PlayState extends State<Play> {
       newBoard[availableSpots[i]] = player;
 
       if (player == cPlayer) {
-        move.score = minimax(newBoard, hPlayer).score;
-        // move.score = result;
+        dynamic result = minimax(newBoard, hPlayer);
+        move.score = result.score;
       } else {
-        move.score = minimax(newBoard, cPlayer).score;
-        // move.score = result;
+        dynamic result = minimax(newBoard, cPlayer);
+        move.score = result.score;
       }
 
       newBoard[availableSpots[i]] = move.index;
 
       moves.add(move);
-      int bestMove;
-      if (player == cPlayer) {
-        dynamic bestScore = -10000;
-        for (int i = 0; i < moves.length; i++) {
-          if (moves[i].score > bestScore) {
-            bestScore = moves[i].score;
-            bestMove = i;
-          }
-        }
-      } else {
-        dynamic bestScore = 10000;
-        for (int i = 0; i < moves.length; i++) {
-          if (moves[i].score < bestScore) {
-            bestScore = moves[i].score;
-            bestMove = i;
-          }
+    }
+
+    int bestMove;
+    if (player == cPlayer) {
+      dynamic bestScore = -10000;
+      for (int i = 0; i < moves.length; i++) {
+        if (moves[i].score > bestScore) {
+          bestScore = moves[i].score;
+          bestMove = i;
         }
       }
-      return moves[bestMove];
+    } else {
+      dynamic bestScore = 10000;
+      for (int i = 0; i < moves.length; i++) {
+        if (moves[i].score < bestScore) {
+          bestScore = moves[i].score;
+          bestMove = i;
+        }
+      }
+    }
+    return moves[bestMove];
+  }
+
+  move(String player) {
+    checkWin();
+    dynamic index = minimax(this.values, cPlayer).index;
+    this.values[index] = cPlayer;
+    this.disables[index] = true;
+  }
+
+  alertWin(check) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: check
+                ? Text(
+                    'You Win',
+                    style: TextStyle(color: Colors.black, fontSize: 30),
+                  )
+                : Text(
+                    'You Lose',
+                    style: TextStyle(color: Colors.black, fontSize: 30),
+                  ),
+          );
+        });
+    reset();
+  }
+
+  alertTie() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text('Tie',
+                style: TextStyle(color: Colors.black, fontSize: 30)),
+          );
+        });
+    reset();
+  }
+
+  checkWin() {
+    List<dynamic> availableSpots = emptyIndex(this.values);
+    if (isWin(this.values, hPlayer)) {
+      alertWin(true);
+    } else if (isWin(this.values, cPlayer)) {
+      alertWin(false);
+    } else if (availableSpots.length == 1) {
+      alertTie();
     }
   }
 
@@ -113,13 +177,14 @@ class _PlayState extends State<Play> {
             children: List.generate(values.length, (index) {
               return GestureDetector(
                 onTap: () {
-                  setState(() {
-                    Move i = minimax(this.values, cPlayer);
-                    this.disables[index] = true;
-                    this.values[index] = 'X';
-                    this.values[i.index] = 'O';
-                    this.disables[i.index] = true;
-                  });
+                  if (!this.disables[index]) {
+                    setState(() {
+                      this.disables[index] = true;
+                      this.values[index] = hPlayer;
+                      move(hPlayer);
+                      checkWin();
+                    });
+                  }
                 },
                 child: Container(
                   width: 100,
